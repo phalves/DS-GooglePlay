@@ -10,20 +10,20 @@ sizeFile <- length(file)
 #Listando categorias
 for(i in 1:sizeFile)
 {
-  jsonSet <- fromJSON( file[i] )
-  sizeCategory <- length(category)
-  flag <- TRUE
-  
-  for (j in 1:sizeCategory)
+    jsonSet <- fromJSON( file[i] )
+    sizeCategory <- length(category)
+    flag <- TRUE
+    
+    for (j in 1:sizeCategory)
     if(category[j]==jsonSet$Category)
-      flag <- FALSE
-  
-  if (flag==TRUE)
+    flag <- FALSE
+    
+    if (flag==TRUE)
     category <- c(category,jsonSet$Category)
-  
-  if(jsonSet$Price == 0)
+    
+    if(jsonSet$Price == 0)
     countFree <- countFree+1
-  else
+    else
     countPaid <- countPaid+1
 }
 #FIM: Listando categorias
@@ -35,10 +35,10 @@ mat<-cbind(mat,mat[,1]<-0L)
 
 for(i in 1:sizeFile)
 {
-  jsonSet <- fromJSON( file[i] )
-  for (j in 1:sizeCategory)
+    jsonSet <- fromJSON( file[i] )
+    for (j in 1:sizeCategory)
     if(jsonSet$Category == category[j]){
-      mat[j,2]<-as.numeric(mat[j,2])+1;
+        mat[j,2]<-as.numeric(mat[j,2])+1;
     }
 }
 
@@ -65,10 +65,10 @@ mat<-cbind(mat,mat[,1]<-0L)
 #Somando reviews
 for(i in 1:sizeFile)
 {
-  jsonSet <- fromJSON( file[i] )
-  for (j in 1:sizeCategory)
+    jsonSet <- fromJSON( file[i] )
+    for (j in 1:sizeCategory)
     if(jsonSet$Category == category[j]){
-      mat[j,3]<-as.numeric(mat[j,3])+jsonSet$Reviewers;
+        mat[j,3]<-as.numeric(mat[j,3])+jsonSet$Reviewers;
     }
 }
 #Mais Reviews
@@ -87,10 +87,10 @@ mat<-cbind(mat,mat[,1]<-0L)
 #Somando valores
 for(i in 1:sizeFile)
 {
-  jsonSet <- fromJSON( file[i] )
-  for (j in 1:sizeCategory)
+    jsonSet <- fromJSON( file[i] )
+    for (j in 1:sizeCategory)
     if(jsonSet$Category == category[j]){
-      mat[j,4]<-as.numeric(mat[j,4])+(jsonSet$Reviewers*jsonSet$Price);
+        mat[j,4]<-as.numeric(mat[j,4])+(jsonSet$Reviewers*jsonSet$Price);
     }
 }
 
@@ -104,3 +104,50 @@ mat[menorValor[1,1],]
 
 #Alterando nome das colunas
 colnames(mat) <- c("Category", "#Apps", "#Reviews", "ValorR$")
+
+
+
+#Criando o vetor de contagem para o Histograma e identificando o app com mais reviews
+countVet <- c()
+maxScore <- 0
+for(i in 1:100)
+{
+    jsonSet <- fromJSON( file[i] )
+    countVet <- c(countVet, jsonSet$Score$Count)
+    if(jsonSet$Score$Count>maxScore){
+        maxScore <- jsonSet$Score$Count
+        appMaxScore <- jsonSet
+    }
+}
+appMaxScore$Name
+appMaxScore$Instalations
+#FIM: Criando o vetor de contagem para o Histograma e identificando o app com mais reviews
+
+par(mar=c(5,4,4,3))
+hist(countVet,breaks=10)
+
+
+#Criando o vetor de contagem para o Histograma e identificando o app com mais Downloads
+countVetDownloads <- c()
+maxDownloads <- 0
+for(i in 1:100)
+{
+    jsonSet <- fromJSON( file[i] )
+    countVetDownloads <- c(countVetDownloads, jsonSet$Instalations)
+    if(jsonSet$Instalations>maxDownloads){
+        maxDownloads <- jsonSet$Instalations
+        appMaxDownload <- jsonSet
+    }
+}
+appMaxDownload$Name
+appMaxDownload$Instalations
+#FIM: Criando o vetor de contagem para o Histograma e identificando o app com mais Downloads
+
+
+#Separando as faixas de download
+levels <- countVetDownloads[!duplicated(countVetDownloads)]
+#FIM: Separando as faixas de download
+
+
+#TESTE
+as.numeric(level[1])
