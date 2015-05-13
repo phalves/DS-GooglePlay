@@ -1,153 +1,99 @@
 #Inicializando Valores
 #install.packages("rjson")
+numberOfLines <- -1
 library("rjson")
-file = readLines(  "/Users/phalves/Documents/DS-BancoGooglePlay/playtore2015.json" )
-countFree <- 0
-countPaid <- 0
+
+startTime <- Sys.time()
+file = readLines(  "/Users/phalves/Documents/DS-BancoGooglePlay/playtore2015.json", numberOfLines)
+endReadTime <- Sys.time()
+readTime <- endReadTime - startTime
+readTime
+
 sizeFile <- length(file)
-#FIM: Inicializando Valores
-
-#Listando categorias
-for(i in 1:sizeFile)
-{
-    jsonSet <- fromJSON( file[i] )
-    sizeCategory <- length(category)
-    flag <- TRUE
-    
-    for (j in 1:sizeCategory)
-    if(category[j]==jsonSet$Category)
-    flag <- FALSE
-    
-    if (flag==TRUE)
-    category <- c(category,jsonSet$Category)
-    
-    if(jsonSet$Price == 0)
-    countFree <- countFree+1
-    else
-    countPaid <- countPaid+1
-}
-#FIM: Listando categorias
-
-
-#Contagem por categoria
-mat=matrix(data=c(category)),ncol=1)
-mat<-cbind(mat,mat[,1]<-0L)
-
-for(i in 1:sizeFile)
-{
-    jsonSet <- fromJSON( file[i] )
-    for (j in 1:sizeCategory)
-    if(jsonSet$Category == category[j]){
-        mat[j,2]<-as.numeric(mat[j,2])+1;
-    }
-}
-
-#Limpeza de categoria
-mat<-mat[-43,1:2]
-#FIM: Limpeza de categoria
-#FIM: Contagem por categoria
-
-#Maior numero de downloads
-maiorDownload <- which(mat == max(as.numeric(mat[,2])), arr.ind = TRUE)
-mat[maiorDownload[1,1],]
-
-#Menor numero de downloads
-menorDownload <- which(mat == min(as.numeric(mat[,2])), arr.ind = TRUE)
-mat[menorDownload[1,1],]
-
-countFree
-countPaid
-
-#REVIEWS
-#Adicionando coluna de Reviews
-mat<-cbind(mat,mat[,1]<-0L)
-
-#Somando reviews
-for(i in 1:sizeFile)
-{
-    jsonSet <- fromJSON( file[i] )
-    for (j in 1:sizeCategory)
-    if(jsonSet$Category == category[j]){
-        mat[j,3]<-as.numeric(mat[j,3])+jsonSet$Reviewers;
-    }
-}
-#Mais Reviews
-maiorReview <- which(mat == max(as.numeric(mat[,3])), arr.ind = TRUE)
-mat[maiorReview[1,1],]
-
-#Menos Reviews
-menorReview <- which(mat == min(as.numeric(mat[,3])), arr.ind = TRUE)
-mat[menorReview[1,1],]
-#FIM: REVIEWS
-
-
-#Adicionando coluna de valores
-mat<-cbind(mat,mat[,1]<-0L)
-
-#Somando valores
-for(i in 1:sizeFile)
-{
-    jsonSet <- fromJSON( file[i] )
-    for (j in 1:sizeCategory)
-    if(jsonSet$Category == category[j]){
-        mat[j,4]<-as.numeric(mat[j,4])+(jsonSet$Reviewers*jsonSet$Price);
-    }
-}
-
-#Maior Valor (#reviews*preco)
-maiorValor <- which(mat == max(as.numeric(mat[,4])), arr.ind = TRUE)
-mat[maiorValor[1,1],]
-
-#Menor Valor
-menorValor <- which(mat == min(as.numeric(mat[,4])), arr.ind = TRUE)
-mat[menorValor[1,1],]
-
-#Alterando nome das colunas
-colnames(mat) <- c("Category", "#Apps", "#Reviews", "ValorR$")
-
-
 
 #Criando o vetor de contagem para o Histograma e identificando o app com mais reviews
 countVet <- c()
 maxScore <- 0
-for(i in 1:100)
-{
-    jsonSet <- fromJSON( file[i] )
-    countVet <- c(countVet, jsonSet$Score$Count)
-    if(jsonSet$Score$Count>maxScore){
-        maxScore <- jsonSet$Score$Count
-        appMaxScore <- jsonSet
-    }
-}
-appMaxScore$Name
-appMaxScore$Instalations
-#FIM: Criando o vetor de contagem para o Histograma e identificando o app com mais reviews
-
-par(mar=c(5,4,4,3))
-hist(countVet,breaks=10)
-
+category <- fromJSON(file[1])$Category
 
 #Criando o vetor de contagem para o Histograma e identificando o app com mais Downloads
 countVetDownloads <- c()
 maxDownloads <- 0
-for(i in 1:100)
+
+
+for(i in 1:sizeFile)
 {
-    jsonSet <- fromJSON( file[i] )
-    countVetDownloads <- c(countVetDownloads, jsonSet$Instalations)
-    if(jsonSet$Instalations>maxDownloads){
-        maxDownloads <- jsonSet$Instalations
-        appMaxDownload <- jsonSet
-    }
+  jsonSet <- fromJSON( file[i] )
+  sizeCategory <- length(category)
+  flag <- TRUE
+  
+  for (j in 1:sizeCategory)
+    if(category[j]==jsonSet$Category)
+      flag <- FALSE
+  
+  if (flag==TRUE){
+    category <- c(category,jsonSet$Category)
+  }
 }
+
+#Criando matriz dos Apps por categorias
+mat=matrix(data=0L,ncol=4,nrow=sizeCategory)
+for(j in 1:sizeCategory)
+  mat[j,1]<-category[j]
+
+#Alterando nome das colunas
+colnames(mat) <- c("Category", "#Apps", "#Reviews", "ValorR$")
+
+#Contando Apps por categoria - Numero de reviews - Preco aproximado
+for(i in 1:sizeFile)
+{
+  jsonSet <- fromJSON( file[i] )
+  for (j in 1:sizeCategory){
+    if(jsonSet$Category == category[j]){
+      mat[j,2]<-as.numeric(mat[j,2])+1;
+      mat[j,3]<-as.numeric(mat[j,3])+jsonSet$Reviewers;
+      mat[j,4]<-as.numeric(mat[j,4])+(jsonSet$Reviewers*jsonSet$Price);
+    }
+  }
+  
+  countVet <- c(countVet, jsonSet$Score$Count)
+  if(jsonSet$Score$Count>maxScore){
+    maxScore <- jsonSet$Score$Count
+    appMaxScore <- jsonSet
+  }
+  
+  #Removendo as virgulas para realizar a ordenacao
+  instalationClean <- gsub(",", "",jsonSet$Instalations)
+  
+  countVetDownloads <- c(countVetDownloads, instalationClean)
+  if(instalationClean>maxDownloads){
+    maxDownloads <- instalationClean
+    appMaxDownload <- jsonSet
+  }
+}
+
+appMaxScore$Name
+appMaxScore$Instalations
+
 appMaxDownload$Name
 appMaxDownload$Instalations
-#FIM: Criando o vetor de contagem para o Histograma e identificando o app com mais Downloads
-
 
 #Separando as faixas de download
 levels <- countVetDownloads[!duplicated(countVetDownloads)]
 #FIM: Separando as faixas de download
 
+#Numero de Apps nas faixas de valores de instalacao
+countVetDownloads = factor(countVetDownloads)
+table(countVetDownloads)
 
-#TESTE
-as.numeric(level[1])
+#Tempo total de execucao
+endTime <- Sys.time()
+totalTime <- endTime-startTime
+totalTime
+
+# #TESTE PLOT
+# par(mar=c(4,4,4,7))
+# hist(table(countVetDownloads),breaks=6)
+# 
+# par(mar=c(4,4,4,7))
+# hist(countVet,breaks=10)
