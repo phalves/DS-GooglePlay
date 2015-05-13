@@ -91,6 +91,21 @@ endTime <- Sys.time()
 totalTime <- endTime-startTime
 totalTime
 
+
+# Qual categoria de monetização é mais popular/ bem avaliada em cada categoria de aplicativo?
+# Criar array com apps Free
+# Criar array com apps Pagos
+# Fazer a média de estrelas (Score$Total) dos apps Free
+# Fazer a média de estrelas (Score$Total) dos apps Pagos
+
+# Analisar nível de interação do usuário de acordo com o tipo de monetização
+# Usar array com apps Free
+# Usar array com apps Pagos
+# Fazer a média de "counts" (reviews feitos Score$Count) dos apps Free
+# Fazer a média de "counts" (reviews feitos Score$Count) dos apps Pagos
+
+
+
 # #TESTE PLOT
 # par(mar=c(4,4,4,7))
 # hist(table(countVetDownloads),breaks=6)
