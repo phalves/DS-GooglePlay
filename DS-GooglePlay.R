@@ -1,6 +1,6 @@
 #Inicializando Valores
 #install.packages("rjson")
-numberOfLines <- 100
+numberOfLines <- 50000
 library("rjson")
 
 startTime <- Sys.time()
@@ -15,30 +15,21 @@ sizeFile <- length(file)
 countVet <- c()
 maxScore <- 0
 category <- fromJSON(file[1])$Category
+#category <- substr(fromJSON(file[1])$Category,22,100)
 
 #Criando o vetor de contagem para o Histograma e identificando o app com mais Downloads
 countVetDownloads <- c()
 maxDownloads <- 0
-
 maxDownloadsApps <- c()
-
-# MAtrizes para o histograma
-freeApps=matrix(data=0L,ncol=26,nrow=sizeFile)
-freeAppsWithPurchase=matrix(data=0L,ncol=26,nrow=sizeFile)
-paidApps=matrix(data=0L,ncol=26,nrow=sizeFile)
-paidAppsWithPurchase=matrix(data=0L,ncol=26,nrow=sizeFile)
 
 #Para criar o dataframe
 jsonFields<-c()
-colunasAppSize<-c()
-colunasCategory<-c()
 colunasAppSize<-c()
 colunasCategory<-c()
 colunasContentRating<-c()
 colunasHaveInAppPurchases<-c()
 colunasIsFree<-c()
 colunasMinimumOSVersion<-c()
-
 
 
 for(i in 1:sizeFile)
@@ -97,7 +88,8 @@ for(i in 1:sizeFile)
   
   if(length(jsonFields)==0)
     jsonFields <- attributes(jsonSet)
-
+  
+  
   colunasAppSize<-c(colunasAppSize,jsonSet$AppSize)
   colunasCategory<-c(colunasCategory,substr(jsonSet$Category,22,100))
   colunasContentRating<-c(colunasContentRating,jsonSet$ContentRating)
@@ -105,40 +97,39 @@ for(i in 1:sizeFile)
   colunasIsFree<-c(colunasIsFree,jsonSet$IsFree)
   colunasMinimumOSVersion<-c(colunasMinimumOSVersion,jsonSet$MinimumOSVersion)
   
-
-#   if(jsonSet$IsFree == TRUE){
-#     for(j in 1:length(jsonSet))
-#     #freeApps[row(freeApps+1),]<-jsonSet
-#     freeApps<-c(freeApps,jsonSet)
-#   }
+  
 }
 
 #Criando o Dataframe
 dt<-data.frame(colunasAppSize,colunasCategory,colunasContentRating,colunasHaveInAppPurchases,colunasIsFree,colunasMinimumOSVersion)
-dt
 
-n<-c()
-for(i in 1:sizeFile)
-{
-  if(dt[i,3]=="Everyone")
-    n<-c(n,4)
-  else if(dt[i,3]=="High Maturity")
-    n<-c(n,3)
-  else if(dt[i,3]=="Low Maturity")
-    n<-c(n,1)
-  else if(dt[i,3]=="Medium Maturity")
-    n<-c(n,2)
-}
-#Montando histograma
+#Montando histogramas
 #hist(dt[,1],xlim=c(-1,200))
-#Histograma de colunasContentRating
-hist(n, main="colunasContentRating")
 
+#PARAMETROS PARA O PLOT
 #plot(table(factor(dt[,3])))
-plot(table(factor(dt[,2])))
-plot(table(factor(dt[,3])),main="ContentRating")
-plot(table(factor(dt[,6])),main="MinimumOSVersion")
+originalParameters <- par()
+par(mar=c(15,5,1,1)+0.1)
 
+#AppSize
+plot(table(factor(dt[,1])),main="AppSize")
+
+#Category
+plot(table(factor(dt[,2])),main="Category", las=2, ylab="# Apps", ylim=c(0,max(table(factor(dt[,2])))*1.2))
+#axis(2, at=seq(1,50, by=5))
+
+#ContentRating
+barplot(table(factor(dt[,3])),main="ContentRating", ylim=c(0,max(table(factor(dt[,3])))*1.2))
+
+#HaveInAppPurchases
+#plot(table(factor(dt[,4])),main="HaveInAppPurchases")
+barplot(table(dt[,4]), horiz=TRUE, las=0, main="HaveInAppPurchases", xlim=c(0,max(table(factor(dt[,4])))*1.2))
+
+#IsFree
+barplot(table(factor(dt[,5])),main="IsFree", ylim=c(0,max(table(factor(dt[,5])))*1.2))
+
+#MinimumOSVersion
+barplot(table(factor(dt[,6])),main="MinimumOSVersion", las=2, ylim=c(0,max(table(factor(dt[,6])))*1.2))
 
 
 
@@ -153,8 +144,8 @@ levels <- countVetDownloads[!duplicated(countVetDownloads)]
 #FIM: Separando as faixas de download
 
 #Numero de Apps nas faixas de valores de instalacao
-countVetDownloads = factor(countVetDownloads)
-table(countVetDownloads)
+countFactorVetDownloads = factor(countVetDownloads)
+barplot(table(countFactorVetDownloads),las=2)
 
 #Tempo total de execucao
 endTime <- Sys.time()
