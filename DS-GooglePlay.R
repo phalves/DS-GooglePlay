@@ -1,6 +1,6 @@
 #Inicializando Valores
 #install.packages("rjson")
-numberOfLines <- 10000
+numberOfLines <- 100
 library("rjson")
 
 startTime <- Sys.time()
@@ -21,6 +21,24 @@ countVetDownloads <- c()
 maxDownloads <- 0
 
 maxDownloadsApps <- c()
+
+# MAtrizes para o histograma
+freeApps=matrix(data=0L,ncol=26,nrow=sizeFile)
+freeAppsWithPurchase=matrix(data=0L,ncol=26,nrow=sizeFile)
+paidApps=matrix(data=0L,ncol=26,nrow=sizeFile)
+paidAppsWithPurchase=matrix(data=0L,ncol=26,nrow=sizeFile)
+
+#Para criar o dataframe
+jsonFields<-c()
+colunasAppSize<-c()
+colunasCategory<-c()
+colunasAppSize<-c()
+colunasCategory<-c()
+colunasContentRating<-c()
+colunasHaveInAppPurchases<-c()
+colunasIsFree<-c()
+colunasMinimumOSVersion<-c()
+
 
 
 for(i in 1:sizeFile)
@@ -76,7 +94,53 @@ for(i in 1:sizeFile)
     if("500000000 - 1000000000"==maxDownloads)
       maxDownloadsApps <- c(maxDownloadsApps,jsonSet)
   }
+  
+  if(length(jsonFields)==0)
+    jsonFields <- attributes(jsonSet)
+
+  colunasAppSize<-c(colunasAppSize,jsonSet$AppSize)
+  colunasCategory<-c(colunasCategory,substr(jsonSet$Category,22,100))
+  colunasContentRating<-c(colunasContentRating,jsonSet$ContentRating)
+  colunasHaveInAppPurchases<-c(colunasHaveInAppPurchases,jsonSet$HaveInAppPurchases)
+  colunasIsFree<-c(colunasIsFree,jsonSet$IsFree)
+  colunasMinimumOSVersion<-c(colunasMinimumOSVersion,jsonSet$MinimumOSVersion)
+  
+
+#   if(jsonSet$IsFree == TRUE){
+#     for(j in 1:length(jsonSet))
+#     #freeApps[row(freeApps+1),]<-jsonSet
+#     freeApps<-c(freeApps,jsonSet)
+#   }
 }
+
+#Criando o Dataframe
+dt<-data.frame(colunasAppSize,colunasCategory,colunasContentRating,colunasHaveInAppPurchases,colunasIsFree,colunasMinimumOSVersion)
+dt
+
+n<-c()
+for(i in 1:sizeFile)
+{
+  if(dt[i,3]=="Everyone")
+    n<-c(n,4)
+  else if(dt[i,3]=="High Maturity")
+    n<-c(n,3)
+  else if(dt[i,3]=="Low Maturity")
+    n<-c(n,1)
+  else if(dt[i,3]=="Medium Maturity")
+    n<-c(n,2)
+}
+#Montando histograma
+#hist(dt[,1],xlim=c(-1,200))
+#Histograma de colunasContentRating
+hist(n, main="colunasContentRating")
+
+#plot(table(factor(dt[,3])))
+plot(table(factor(dt[,2])))
+plot(table(factor(dt[,3])),main="ContentRating")
+plot(table(factor(dt[,6])),main="MinimumOSVersion")
+
+
+
 
 appMaxScore$Name
 appMaxScore$Instalations
